@@ -1,0 +1,32 @@
+[
+ {
+  "arquivo": "treeGrowth-",
+  "motivo": "Material depois do nome do item (Espada de cobre, não de cobre Espada)",
+  "regex": "\\b([a-zA-Z_$][\\w$]*)\\.prefix\\+\" \"\\+([a-zA-Z_$][\\w$]*)\\b(?!\\()",
+  "para": "$2+\" \"+$1.prefix"
+ },
+ {
+  "arquivo": "persistence-",
+  "motivo": "Material depois do nome do item",
+  "regex": "`\\$\\{([a-zA-Z_$][\\w$]*)\\.prefix\\} \\$\\{([a-zA-Z_$][\\w$]*\\([a-zA-Z_$][\\w$]*\\.base\\))\\}`",
+  "para": "`${$2} ${$1.prefix}`"
+ },
+ {
+  "arquivo": "treeGrowth-",
+  "motivo": "Nome base do item (sword -> Espada) na função que transforma id em título",
+  "regex": "\\b([a-zA-Z_$][\\w$]*)\\.replace\\(/_/g,\" \"\\)\\.replace\\(/\\\\b\\\\w/g,([a-zA-Z_$][\\w$]*=>[a-zA-Z_$][\\w$]*\\.toUpperCase\\(\\))\\)",
+  "para": "(__TABELA_BASE__[$1]||$1.replace(/_/g,\" \").replace(/\\b\\w/g,$2))"
+ },
+ {
+  "arquivo": "persistence-",
+  "motivo": "Nome base do item na função que transforma id em título",
+  "regex": "String\\(([a-zA-Z_$][\\w$]*)\\)\\.replace\\(/_/g,\" \"\\)\\.replace\\(/\\\\b\\\\w/g,([a-zA-Z_$][\\w$]*=>[a-zA-Z_$][\\w$]*\\.toUpperCase\\(\\))\\)",
+  "para": "(__TABELA_BASE__[$1]||String($1).replace(/_/g,\" \").replace(/\\b\\w/g,$2))"
+ },
+ {
+  "arquivo": "index-",
+  "motivo": "Renomear em português os itens já gravados no save, ao carregar (_decodeSave)",
+  "regex": "([a-zA-Z_$][\\w$]*)\\(([a-zA-Z_$][\\w$]*),\"_decodeSave\"\\)",
+  "para": "$&,$2=(function(f,n){return function(){return n(f.apply(this,arguments))}})($2,__NORMALIZADOR_ITENS__)"
+ }
+]

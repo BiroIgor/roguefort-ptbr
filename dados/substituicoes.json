@@ -1,0 +1,82 @@
+[
+ [
+  "\\b([Aa]|[Dd]a|[Nn]a|[Pp]ela) Rindstone\\b",
+  "$1 Pedra da Casca"
+ ],
+ [
+  "\\b([Dd]e) Rindstone\\b",
+  "da Pedra da Casca"
+ ],
+ [
+  "\\bdo Undermaw\\b",
+  "da Undermaw"
+ ],
+ [
+  "\\bno Undermaw\\b",
+  "na Undermaw"
+ ],
+ [
+  "\\bpelo Undermaw\\b",
+  "pela Undermaw"
+ ],
+ [
+  "\\bpara o Undermaw\\b",
+  "para a Undermaw"
+ ],
+ [
+  "\\bao Undermaw\\b",
+  "à Undermaw"
+ ],
+ [
+  "\\bo Undermaw\\b",
+  "a Undermaw"
+ ],
+ [
+  "\\bO Undermaw\\b",
+  "A Undermaw"
+ ],
+ [
+  "Marcas Despovoadas",
+  "Marcas Inquietas"
+ ],
+ [
+  "\\bAzedume\\b",
+  "Azedamento"
+ ],
+ [
+  "Soro do Andarilho",
+  "Soro do Viajante"
+ ],
+ [
+  "Andarilho das Tumbas",
+  "Andarilho da Cova"
+ ],
+ [
+  "\\b([Mm])aná(?![A-Za-zÀ-ÿ])",
+  "$1ana"
+ ],
+ [
+  "painel de Bichos",
+  "painel de Animais"
+ ],
+ [
+  "Peça do Selo",
+  "Peça de Selagem"
+ ],
+ [
+  "Peças do Selo",
+  "Peças de Selagem"
+ ],
+ [
+  "PEDRAS DE CAMINHO",
+  "PEDRAS-GUIA"
+ ],
+ [
+  "PEDRA DE CAMINHO",
+  "PEDRA-GUIA"
+ ],
+ [
+  "Dragão da Lareira",
+  "Serpe da Lareira"
+ ]
+]
