@@ -75,6 +75,8 @@ if (require.main === module) {
     const ref = referencia(u.text);
     const item = [i, topCtx(u).replace(/^prop:/, ''), u.text];
     if (ref) { item.push(ref, feitos[ref]); comRef++; }
+    // Conteúdo de cada {n} (código), para quem traduz entender a frase-modelo.
+    if (u.exprs && u.exprs.length) { while (item.length < 5) item.push(null); item.push(u.exprs.map((e) => e.slice(0, 90))); }
     lote.push(item);
     chars += u.text.length + 20 + (ref ? ref.length + feitos[ref].length : 0) / 2;
     if (chars >= maxChars) flush();

@@ -8,6 +8,12 @@ Pasta base: C:\Program Files (x86)\Steam\steamapps\common\Roguefort\traducao-ptb
 3. Para cada lote, escreva `dados\lotes\<nome>.pt.json`: um único objeto JSON {"id": "tradução", ...} com TODOS os ids do lote. Se ficar grande demais para uma escrita, divida em partes e junte com um script node temporário (apague-o depois).
 4. Valide cada lote e corrija até dar OK: `node tools\validar.js dados\lotes\<nome>.json`
 
+Frases-modelo (lotes v036c em diante):
+- Muitos textos agora são a frase INTEIRA que o jogo monta, com `{0}`, `{1}`… no lugar das partes variáveis. O 6º elemento do item (quando existe) lista o código de cada `{n}` — use-o para entender o que entra ali (nome de criatura, número, distância, sufixo de plural etc.). Reordene livremente para soar natural em português.
+- Se um `{n}` for só sufixo de plural/artigo/verbo em inglês (ex.: `n===1?"":"s"`, `"a"`/`"an"`, `"is"`/`"are"`), você PODE omiti-lo e escrever a forma portuguesa adequada (ex.: "casa(s)") — o validador aceita.
+- Nomes de criaturas/lugares inseridos em `{n}` chegam sem artigo: escreva "Luna ataca {1}", não "Luna ataca o {1}".
+- Marcadores `{{CONFIRM}}`, `{{CANCEL}}`, `{{INTERACT}}`… são teclas do jogo: mantenha exatamente iguais (mesma quantidade).
+
 Regras críticas:
 - Preserve exatamente os marcadores {0}, {1}… (pode reordenar), quebras de linha, teclas/atalhos e a pontuação/espaço de borda dos fragmentos.
 - Muitos textos são FRAGMENTOS concatenados pelo jogo com nomes ou números ("You found", "is stabled.", "towards the next"). Traduza como fragmento que encaixe numa frase portuguesa natural.

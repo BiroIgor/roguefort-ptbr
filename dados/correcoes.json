@@ -22,5 +22,7 @@
  "The Last Letter from the Undermaw": "A última carta da Undermaw",
  "Director: entering the Undermaw": "Diretor: entrando na Undermaw",
  "See the Archlich in the Undermaw.": "Veja o Arquilich na Undermaw.",
- "{0} defender{1} assigned {2}. Hunger, thirst, exhaustion, injury and treatment still take them off duty. Their labour settings and Areas do not limit where they go.": "Ordem {2} dada a {0} guarda{1}. Fome, sede, exaustão, ferimentos e tratamento ainda os tiram do serviço. As configurações de trabalho e as Áreas deles não limitam aonde vão."
+ "{0} defender{1} assigned {2}. Hunger, thirst, exhaustion, injury and treatment still take them off duty. Their labour settings and Areas do not limit where they go.": "Ordem {2} dada a {0} guarda{1}. Fome, sede, exaustão, ferimentos e tratamento ainda os tiram do serviço. As configurações de trabalho e as Áreas deles não limitam aonde vão.",
+ "Ageing: {0} to go under stone{1}.": "Maturação: faltam {0} para ir à adega{1}.",
+ "{0} under stone": "{0} na adega"
 }

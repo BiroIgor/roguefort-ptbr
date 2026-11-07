@@ -9,7 +9,7 @@ const path = require('path');
 const asar = require('./asar');
 const { parse, splitEdges, encode } = require('./textos');
 const { scan } = require('./extrair');
-const { codigoNormalizador } = require('./itens');
+const { codigoNormalizador, tabelaIds } = require('./itens');
 
 const ROOT = path.join(__dirname, '..');
 const GAME_ASAR = path.join(ROOT, '..', 'resources', 'app.asar');
@@ -67,10 +67,13 @@ function gerar(saida, traduzir, dict = {}) {
   // Itens já gravados no save: renomeados em português ao carregar (ver tools/itens.js).
   const nomesBase = fs.existsSync(BASE_FILE) ? JSON.parse(fs.readFileSync(BASE_FILE, 'utf8')) : {};
   const NORMALIZADOR = codigoNormalizador(files, dict, nomesBase, MATERIAIS_PT).fn;
+  const TABELA_IDS = tabelaIds(files, dict);
   let total = 0, pulados = 0;
   for (const f of files) {
     const edits = [];
+    let fimAplicado = -1; // nunca aplica uma edição dentro de outra já aplicada (frase-modelo vs. pedaços)
     for (const o of f.occ) {
+      if (o.start < fimAplicado) continue;
       const core = splitEdges(o.value).core;
       // Prefixo de material (prefix:"Iron" na tabela de materiais): usa a forma "de ferro", não a tradução genérica.
       const t = o.ctx === 'prop:prefix' && MATERIAIS_PT[core] && traduzir(core) !== undefined ? MATERIAIS_PT[core] : traduzir(core);
@@ -78,12 +81,14 @@ function gerar(saida, traduzir, dict = {}) {
       if (!placeholdersOk(t, core)) { pulados++; continue; }
       if (t === core) continue;
       edits.push({ start: o.start, end: o.end, code: encode(o, t) });
+      fimAplicado = o.end;
       if (o.injectType) edits.push({ start: o.propStart, end: o.propStart, code: `type:${JSON.stringify(o.injectType)},` });
     }
     // Remove o "’" separado quando as duas metades da frase foram traduzidas.
     const traduzidos = new Set(edits.map((e) => e.start));
     for (const a of f.apos || []) {
-      if (traduzidos.has(a.prev) && traduzidos.has(a.next)) edits.push({ start: a.start, end: a.end, code: '""' });
+      const dentro = edits.some((e) => e.start <= a.start && a.end <= e.end);
+      if (!dentro && traduzidos.has(a.prev) && traduzidos.has(a.next)) edits.push({ start: a.start, end: a.end, code: '""' });
     }
     if (!edits.length) continue;
     const parts = [];
@@ -99,10 +104,13 @@ function gerar(saida, traduzir, dict = {}) {
       const re = p.regex ? new RegExp(p.regex, 'g') : null;
       const n = re ? (src.match(re) || []).length : src.split(p.de).length - 1;
       if (!n) console.warn(`aviso: patch de código não encontrado (${p.motivo})`);
-      const para = p.para.split('__TABELA_BASE__').join(TABELA_BASE).split('__NORMALIZADOR_ITENS__').join(NORMALIZADOR);
+      const para = p.para.split('__TABELA_BASE__').join(TABELA_BASE).split('__NORMALIZADOR_ITENS__').join(NORMALIZADOR)
+        .split('__TABELA_IDS__').join(TABELA_IDS);
       src = re ? src.replace(re, para) : src.split(p.de).join(para);
     }
     try { parse(src); } catch (err) {
+      const pos = err.pos || 0;
+      console.error('trecho com erro:', src.slice(Math.max(0, pos - 300), pos + 120));
       throw new Error(`Erro de sintaxe após traduzir ${f.p}: ${err.message}`);
     }
     repl.set(f.p, Buffer.from(src, 'utf8'));

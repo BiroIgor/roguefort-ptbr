@@ -139,7 +139,8 @@ function contextOf(ancestors) {
 
 // O valor parece frase/rótulo em inglês (e não id, CSS, caminho ou código)?
 function looksLikeText(value) {
-  const t = value.trim();
+  // {{CONFIRM}}, {{INTERACT}}…: marcadores de tecla do próprio jogo, preservados na tradução.
+  const t = value.trim().replace(/\{\{[A-Z0-9_]+\}\}/g, 'K');
   if (t.length < 2 || t.length > 4000) return false;
   if (!/[a-z]/.test(t)) return false;
   // Valores CSS: variáveis, calc(), pilhas de fontes.
@@ -204,13 +205,31 @@ function collect(src) {
       if (typeof node.value !== 'string') return;
       handle(node, ancestors, node.value, null);
     },
+    // Frase montada com +: "Traveling: "+x+" remaining." vira um modelo único "Traveling: {0} remaining.".
+    BinaryExpression(node, _state, ancestors) {
+      if (node.operator !== '+') return;
+      const parent = ancestors[ancestors.length - 2];
+      if (parent && parent.type === 'BinaryExpression' && parent.operator === '+') return;
+      const partes = cadeia(node);
+      if (!partes) return;
+      let value = '';
+      const exprs = [];
+      for (const p of partes) {
+        if (p.texto !== undefined) value += protegerChaves(p.texto);
+        else { value += '{' + exprs.length + '}'; exprs.push(src.slice(p.no.start, p.no.end)); }
+      }
+      if (!exprs.length || /\u0001/.test(value)) return;
+      const antes = occ.length;
+      handle(node, ancestors, value, exprs);
+      if (occ.length > antes) occ[occ.length - 1].cadeia = true;
+    },
     TemplateLiteral(node, _state, ancestors) {
       if (ancestors.length >= 2 && ancestors[ancestors.length - 2].type === 'TaggedTemplateExpression') return;
       if (node.quasis.some((q) => q.value.cooked == null)) return;
       let value = '';
       const exprs = [];
       node.quasis.forEach((q, i) => {
-        value += q.value.cooked.replace(/[{}]/g, (c) => (c === '{' ? '\u0001' : '\u0002'));
+        value += protegerChaves(q.value.cooked);
         if (i < node.expressions.length) {
           value += '{' + i + '}';
           const e = node.expressions[i];
@@ -222,6 +241,39 @@ function collect(src) {
     },
   });
   return { occ, unsafeValues, keys, apos };
+}
+
+// Chaves soltas não podem virar marcador {n}; só {{TECLA}} (marcador do jogo) é aceito como está.
+const protegerChaves = (s) => s.replace(/\{\{[A-Z0-9_]+\}\}|[{}]/g, (m) => (m.length > 1 ? m : '\u0001'));
+
+// Achata uma cadeia de + em partes {texto} / {no}. Respeita a semântica do JS: o que vem antes da
+// primeira string é soma numérica e fica como uma expressão só (n+1+" turns" -> "{0} turns").
+function cadeia(node) {
+  const ehTexto = (n) => (n.type === 'Literal' && typeof n.value === 'string')
+    || (n.type === 'TemplateLiteral' && n.quasis.every((q) => q.value.cooked != null));
+  const partesDe = (n) => {
+    if (n.type === 'Literal') return [{ texto: n.value }];
+    const out = [];
+    n.quasis.forEach((q, i) => {
+      if (q.value.cooked) out.push({ texto: q.value.cooked });
+      if (i < n.expressions.length) out.push({ no: n.expressions[i] });
+    });
+    return out;
+  };
+  const achatar = (n) => {
+    if (n.type === 'BinaryExpression' && n.operator === '+') {
+      const esq = achatar(n.left);
+      if (esq.temTexto) return { temTexto: true, partes: esq.partes.concat(ehTexto(n.right) ? partesDe(n.right) : [{ no: n.right }]) };
+      if (ehTexto(n.right)) return { temTexto: true, partes: [{ no: n.left }].concat(partesDe(n.right)) };
+      return { temTexto: false, partes: [{ no: n }] };
+    }
+    return ehTexto(n) ? { temTexto: true, partes: partesDe(n) } : { temTexto: false, partes: [{ no: n }] };
+  };
+  const r = achatar(node);
+  if (!r.temTexto) return null;
+  // Só vale a pena se houver texto de verdade (letras) na frase.
+  if (!r.partes.some((p) => p.texto !== undefined && /[A-Za-z]{2,}/.test(p.texto))) return null;
+  return r.partes;
 }
 
 // Mesma regra do jogo: name.toLowerCase().replace(/\s+/g,"_").
@@ -250,7 +302,11 @@ function encode(occ, translatedCore) {
   for (const part of parts) {
     const m = part.match(/^\{(\d+)\}$/);
     if (m && Number(m[1]) < occ.exprs.length) {
-      out += '${' + occ.exprs[Number(m[1])] + '}';
+      const expr = occ.exprs[Number(m[1])];
+      // Em frase-modelo, nomes vêm do jogo com artigo inglês ("the Escorpião"): tira o "the " inicial.
+      out += occ.cadeia
+        ? '${((v)=>typeof v=="string"?v.replace(/^the (?=[A-Z\\u00c0-\\u00dd])/i,""):v)(' + expr + ')}'
+        : '${' + expr + '}';
     } else {
       out += part.replace(/[\\`]/g, (c) => '\\' + c).replace(/\$\{/g, '\\${')
         .replace(/\r/g, '\\r').replace(/\n/g, '\\n').replace(/[^\x20-\x7e]/g, escapeChar);

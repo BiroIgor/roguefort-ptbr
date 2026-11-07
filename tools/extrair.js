@@ -33,9 +33,12 @@ function scan(asarPath) {
     // Descarta ocorrências aninhadas dentro de outra (ex.: string dentro de ${} de um template).
     f.occ.sort((a, b) => a.start - b.start || b.end - a.end);
     const kept = [];
+    // Pedaços dentro de uma frase-modelo (cadeia de +) ficam: servem de fallback se a frase não tiver tradução.
+    let fimExterno = -1;
     for (const o of f.occ) {
-      if (kept.length && o.start < kept[kept.length - 1].end) continue;
+      if (o.start < fimExterno) continue;
       kept.push(o);
+      if (!o.cadeia) fimExterno = Math.max(fimExterno, o.end);
     }
     f.occ = kept;
   }
@@ -54,6 +57,7 @@ if (require.main === module) {
       let u = uniq.get(core);
       if (!u) {
         u = { text: core, count: 0, ctxs: {}, files: {}, words: (core.match(/[A-Za-z'’]+/g) || []).length };
+        if (o.exprs && o.exprs.length) u.exprs = o.exprs;
         uniq.set(core, u);
       }
       u.count++;

@@ -62,4 +62,24 @@ return function(save){try{visit(save,0)}catch(e){}return save}})(${dados})`;
   return { fn: fn.replace(/\n/g, '').replace(/[^\x20-\x7e]/g, (c) => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0')), materiais, afixos };
 }
 
-module.exports = { codigoNormalizador, tabelas };
+// Tabela id -> nome em português (minúsculo), para telas que mostram o id do item ("fox_pelt" -> "fox pelt").
+function tabelaIds(bundles, dict) {
+  const ids = {};
+  const add = (id, name) => {
+    if (!/^[a-z][a-z0-9_]*$/.test(id) || !name || !dict[name] || ids[id]) return;
+    ids[id] = dict[name].toLowerCase();
+  };
+  for (const { src } of bundles) {
+    walk.simple(parse(src), {
+      ObjectExpression(node) {
+        add(strProp(node, 'id'), strProp(node, 'name')); // {id:"fox_pelt", name:"Fox Pelt"}
+        for (const p of node.properties) { // {fox_pelt:{name:"Fox Pelt", ...}}
+          if (p.type === 'Property' && !p.computed && p.value.type === 'ObjectExpression') add(keyName(p), strProp(p.value, 'name'));
+        }
+      },
+    });
+  }
+  return JSON.stringify(ids).replace(/[^\x20-\x7e]/g, (c) => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'));
+}
+
+module.exports = { codigoNormalizador, tabelas, tabelaIds };

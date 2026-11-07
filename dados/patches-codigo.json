@@ -28,5 +28,23 @@
   "motivo": "Renomear em português os itens já gravados no save, ao carregar (_decodeSave)",
   "regex": "([a-zA-Z_$][\\w$]*)\\(([a-zA-Z_$][\\w$]*),\"_decodeSave\"\\)",
   "para": "$&,$2=(function(f,n){return function(){return n(f.apply(this,arguments))}})($2,__NORMALIZADOR_ITENS__)"
+ },
+ {
+  "arquivo": "Roguefort-",
+  "motivo": "Ingredientes das receitas mostrados pelo id (fox_pelt -> pele de raposa)",
+  "regex": "\\b([a-zA-Z_$][\\w$]*)\\.toString\\(\\)\\.replace\\(/_/g,\" \"\\)",
+  "para": "(__TABELA_IDS__[$1]||$1.toString().replace(/_/g,\" \"))"
+ },
+ {
+  "arquivo": "cheeseMaturation-",
+  "motivo": "Nome de ingrediente de queijo pelo id (ingredientDisplayName)",
+  "regex": "String\\(([a-zA-Z_$][\\w$]*)\\)\\.replace\\(/_/g,\" \"\\)(?=,[a-zA-Z_$][\\w$]*=[a-zA-Z_$][\\w$]*\\(\\1\\);return)",
+  "para": "(__TABELA_IDS__[$1]||String($1).replace(/_/g,\" \"))"
+ },
+ {
+  "arquivo": "treeGrowth-",
+  "motivo": "Rótulo curto de ingrediente pelo id (shortIngredientLabel)",
+  "regex": "\\(([a-zA-Z_$][\\w$]*)&&\\(\\1\\.label\\|\\|\\1\\.id\\|\\|\\1\\.cls\\)\\|\\|\"\"\\)\\.replace\\(/_/g,\" \"\\)",
+  "para": "((x)=>(__TABELA_IDS__[x]||x.replace(/_/g,\" \")))($1&&($1.label||$1.id||$1.cls)||\"\")"
  }
 ]
