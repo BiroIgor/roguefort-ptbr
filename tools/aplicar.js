@@ -16,15 +16,18 @@ const GAME_ASAR = path.join(ROOT, '..', 'resources', 'app.asar');
 const ORIGINAL = path.join(ROOT, 'backup', 'app.asar.original');
 const DICT = path.join(ROOT, 'dados', 'pt-BR.json');
 const LOTES = path.join(ROOT, 'dados', 'lotes');
-const PATCHES_FILE = path.join(ROOT, 'dados', 'patches-codigo.json');
-const PATCHES = fs.existsSync(PATCHES_FILE) ? JSON.parse(fs.readFileSync(PATCHES_FILE, 'utf8')) : [];
-const MATERIAIS_FILE = path.join(ROOT, 'dados', 'materiais.json');
-const MATERIAIS_PT = fs.existsSync(MATERIAIS_FILE) ? JSON.parse(fs.readFileSync(MATERIAIS_FILE, 'utf8')) : {};
+// Dados em dados/*.json; no instalador .exe eles vêm embutidos em globalThis.__PTBR_DADOS.
+function lerDados(nome, padrao) {
+  const emb = globalThis.__PTBR_DADOS;
+  if (emb && emb[nome] !== undefined) return emb[nome];
+  const p = path.join(ROOT, 'dados', nome + '.json');
+  return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')) : padrao;
+}
+const PATCHES = lerDados('patches-codigo', []);
+const MATERIAIS_PT = lerDados('materiais', {});
 // Tabela id -> nome em português dos tipos base de itens, injetada no código (ASCII puro).
-const BASE_FILE = path.join(ROOT, 'dados', 'nomes-base.json');
-const TABELA_BASE = fs.existsSync(BASE_FILE)
-  ? JSON.stringify(JSON.parse(fs.readFileSync(BASE_FILE, 'utf8'))).replace(/[^\x20-\x7e]/g, (c) => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'))
-  : '{}';
+const NOMES_BASE = lerDados('nomes-base', {});
+const TABELA_BASE = JSON.stringify(NOMES_BASE).replace(/[^\x20-\x7e]/g, (c) => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'));
 
 function juntar() {
   const dict = fs.existsSync(DICT) ? JSON.parse(fs.readFileSync(DICT, 'utf8')) : {};
@@ -60,13 +63,12 @@ const placeholdersOk = (t, en) => {
   return (t.match(/\{\d+\}/g) || []).every((p) => orig.has(p));
 };
 
-// Gera o asar traduzido em `saida` usando `traduzir(core) -> string | undefined`.
-function gerar(saida, traduzir, dict = {}) {
-  const files = scan(ORIGINAL);
+// Gera o asar traduzido em `saida` (a partir de `origem`) usando `traduzir(core) -> string | undefined`.
+function gerar(saida, traduzir, dict = {}, origem = ORIGINAL) {
+  const files = scan(origem);
   const repl = new Map();
   // Itens já gravados no save: renomeados em português ao carregar (ver tools/itens.js).
-  const nomesBase = fs.existsSync(BASE_FILE) ? JSON.parse(fs.readFileSync(BASE_FILE, 'utf8')) : {};
-  const NORMALIZADOR = codigoNormalizador(files, dict, nomesBase, MATERIAIS_PT).fn;
+  const NORMALIZADOR = codigoNormalizador(files, dict, NOMES_BASE, MATERIAIS_PT).fn;
   const TABELA_IDS = tabelaIds(files, dict);
   let total = 0, pulados = 0;
   for (const f of files) {
@@ -118,19 +120,20 @@ function gerar(saida, traduzir, dict = {}) {
   }
   // Só no build de teste: a 0.36+ remove --remote-debugging-port; reativa para tirar prints pelo cdp.js.
   if (process.env.PTBR_DEBUG) {
-    const { header, base } = asar.readHeader(ORIGINAL);
+    const { header, base } = asar.readHeader(origem);
     const node = asar.listFiles(header).find(([p]) => p === '/electron/main.cjs')[1];
-    const main = asar.readFile(ORIGINAL, base, node).toString('utf8')
+    const main = asar.readFile(origem, base, node).toString('utf8')
       .replace(/for \(const sw of \['remote-debugging-port'[^\n]*removeSwitch\(sw\);/, ';');
     repl.set('/electron/main.cjs', Buffer.from(main, 'utf8'));
   }
-  asar.repack(ORIGINAL, saida, repl);
+  asar.repack(origem, saida, repl);
   console.log(`${total} trechos traduzidos em ${repl.size} arquivos (${pulados} pulados por marcador divergente) -> ${saida}`);
+  return { total, arquivos: repl.size };
 }
 
 // Na primeira aplicação, guarda o app.asar original; confere se é a versão para a qual a tradução foi feita.
 function garantirBackup() {
-  const versao = JSON.parse(fs.readFileSync(path.join(ROOT, 'dados', 'versao.json'), 'utf8'));
+  const versao = lerDados('versao', {});
   const sha = (p) => require('crypto').createHash('sha256').update(fs.readFileSync(p)).digest('hex');
   if (!fs.existsSync(ORIGINAL)) {
     if (!fs.existsSync(GAME_ASAR)) throw new Error('resources\\app.asar não encontrado: coloque esta pasta dentro da pasta do jogo (ao lado de "resources").');
@@ -143,8 +146,12 @@ function garantirBackup() {
   }
 }
 
-const cmd = process.argv[2];
-if (cmd === 'juntar') {
+module.exports = { gerar, lerDados };
+
+const cmd = require.main === module ? process.argv[2] : null;
+if (cmd === null) {
+  // usado como módulo (instalador)
+} else if (cmd === 'juntar') {
   juntar();
 } else if (cmd === 'aplicar') {
   garantirBackup();

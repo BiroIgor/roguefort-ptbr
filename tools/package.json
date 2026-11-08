@@ -8,5 +8,9 @@
   "dependencies": {
     "acorn": "8.14.0",
     "acorn-walk": "8.3.4"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.2",
+    "postject": "^1.0.0-alpha.6"
   }
 }

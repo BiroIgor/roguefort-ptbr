@@ -4,3 +4,5 @@ backup/
 *.asar.tmp
 dados/lotes/
 dados/textos-en.json
+tools/dist/
+*.exe
