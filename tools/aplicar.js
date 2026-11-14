@@ -12,8 +12,9 @@ const { scan } = require('./extrair');
 const { codigoNormalizador, tabelaIds } = require('./itens');
 
 const ROOT = path.join(__dirname, '..');
-const GAME_ASAR = path.join(ROOT, '..', 'resources', 'app.asar');
-const ORIGINAL = path.join(ROOT, 'backup', 'app.asar.original');
+// PTBR_JOGO / PTBR_ORIGINAL permitem rodar as ferramentas fora da pasta do jogo (desenvolvimento).
+const GAME_ASAR = process.env.PTBR_JOGO ? path.join(process.env.PTBR_JOGO, 'resources', 'app.asar') : path.join(ROOT, '..', 'resources', 'app.asar');
+const ORIGINAL = process.env.PTBR_ORIGINAL || path.join(ROOT, 'backup', 'app.asar.original');
 const DICT = path.join(ROOT, 'dados', 'pt-BR.json');
 const LOTES = path.join(ROOT, 'dados', 'lotes');
 // Dados em dados/*.json; no instalador .exe eles vêm embutidos em globalThis.__PTBR_DADOS.

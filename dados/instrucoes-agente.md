@@ -1,7 +1,7 @@
 # Instruções para tradução de lotes
 
 Você traduz textos do jogo Roguefort (roguelike/colony sim de fantasia sobre queijos) do inglês para português do Brasil.
-Pasta base: C:\Program Files (x86)\Steam\steamapps\common\Roguefort\traducao-ptbr
+Pasta base: C:\Users\Igor\Downloads\Roguefort-PTBR-v0.36.0
 
 1. Leia `dados\glossario.md` e siga-o à risca (inclusive a seção de consistência: consulte `dados\pt-BR.json` para reutilizar traduções de nomes e termos já traduzidos).
 2. Cada lote `dados\lotes\<nome>.json` é um array JSON de [id, contexto, textoEmIngles] ou [id, contexto, textoEmIngles, inglêsAntigo, traduçãoAntiga]. Os dois últimos campos, quando existem, são a versão anterior desse texto no jogo e sua tradução já aprovada: reaproveite a tradução antiga e ajuste só o que mudou no inglês (mesmos termos e estilo). O contexto indica de onde vem o texto (name/label/title/children = interface; desc/description = descrição; call:x/var/return/arrow = mensagens montadas no código, geralmente log ou avisos). Textos vizinhos costumam ser relacionados: use isso como contexto.

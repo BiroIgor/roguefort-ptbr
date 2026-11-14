@@ -1,11 +1,11 @@
-# Roguefort em Português do Brasil (v0.36.0)
+# Roguefort em Português do Brasil (v0.38.2)
 
 Tradução não oficial do **Roguefort** para português do Brasil: menus, interface, tutorial, log, itens, criaturas, diálogos e lore.
 
-> Feita para a versão **0.36.0** do jogo. Em outras versões o patch ainda funciona, mas textos novos ou alterados ficam em inglês.
+> Feita para a versão **0.38.2** do jogo. Em outras versões o patch ainda funciona, mas textos novos ou alterados ficam em inglês.
 
 ## Instalação (recomendado)
-1. Baixe `Traducao-Roguefort-PTBR-v0.36.0.exe` em [Releases](../../releases).
+1. Baixe `Traducao-Roguefort-PTBR-v0.38.2.exe` em [Releases](../../releases).
 2. Feche o jogo e abra o `.exe`. Ele acha o Roguefort na Steam sozinho; se não achar, pede o caminho da pasta.
 3. Escolha **1) Instalar / atualizar a tradução**. Em menos de um minuto aparece "Pronto!".
 
@@ -34,7 +34,7 @@ Nenhum arquivo do jogo é distribuído aqui, só o dicionário de tradução e a
 ## Arquivos
 | Caminho | Conteúdo |
 |---|---|
-| `dados\pt-BR.json` | Dicionário inglês → português (cerca de 47 mil textos) |
+| `dados\pt-BR.json` | Dicionário inglês → português (cerca de 56 mil textos) |
 | `dados\correcoes.json` | Correções pontuais, com prioridade sobre o dicionário |
 | `dados\substituicoes.json` | Padronização de termos por regex |
 | `dados\patches-codigo.json` | Ajustes no código: ordem material/item ("Espada de cobre") e nomes base dos itens |

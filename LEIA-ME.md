@@ -1,4 +1,4 @@
-# Tradução PT-BR do Roguefort (v0.36.0)
+# Tradução PT-BR do Roguefort (v0.38.2)
 
 ## Uso
 - **APLICAR-TRADUCAO.bat**: gera o `resources\app.asar` traduzido a partir do backup original.

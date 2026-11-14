@@ -78,5 +78,13 @@
  [
   "Dragão da Lareira",
   "Serpe da Lareira"
+ ],
+ [
+  "\\bMofo\\b",
+  "Bolor"
+ ],
+ [
+  "\\bmofo\\b",
+  "bolor"
  ]
 ]
